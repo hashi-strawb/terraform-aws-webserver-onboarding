@@ -11,11 +11,15 @@ if [[ "$1" == "--no-dry-run" ]]; then
 	dryrun=""
 fi
 
+image_filter='Name=name,Values=strawbtest/se-onboarding/webserver*'
+
 for region in eu-west-1 eu-west-2; do
 	echo "Region: ${region}"
 	echo "Deleting Image(s):"
-	aws --region=${region} ec2 describe-images --owners=self --filters "Name=name,Values=strawbtest-se-onboarding-terraform-oss" | jq -r .Images[]
-	images=$(aws --region=${region} ec2 describe-images --owners=self --filters "Name=name,Values=strawbtest-se-onboarding-terraform-oss" | jq -r .Images[].ImageId)
+
+	# TODO: search with prefix
+	aws --region=${region} ec2 describe-images --owners=self --filters ${image_filter} | jq -r .Images[]
+	images=$(aws --region=${region} ec2 describe-images --owners=self --filters ${image_filter} | jq -r .Images[].ImageId)
 
 	echo "${images}"
 	for image_id in ${images}; do
@@ -32,3 +36,8 @@ for region in eu-west-1 eu-west-2; do
 	done
 done
 
+if [[ dryrun == "" ]]; then
+	echo
+	echo To run for real, run with
+	echo ./cleanup.sh --no-dry-run
+fi
