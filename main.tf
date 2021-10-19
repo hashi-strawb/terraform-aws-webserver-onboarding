@@ -37,7 +37,7 @@ data "aws_ami" "ubuntu" {
 
   filter {
     name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
+    values = ["strawbtest-se-onboarding-terraform-oss"]
   }
 
   filter {
@@ -45,7 +45,7 @@ data "aws_ami" "ubuntu" {
     values = ["hvm"]
   }
 
-  owners = ["099720109477"] # Canonical
+  owners = ["self"]
 }
 
 # Allow us to easily connect to the EC2 instance with AWS EC2 Connect
@@ -75,50 +75,6 @@ resource "aws_security_group" "ec2_instance_connect" {
   }
 }
 
-# Allow outbound HTTP(s) access on standard ports, to allow installing packages
-resource "aws_security_group" "outbound_http" {
-  name        = "outbound_http"
-  description = "Allow outbound HTTP(S) access"
-
-  vpc_id = module.vpc.vpc_id
-
-  egress {
-    from_port        = "443"
-    to_port          = "443"
-    protocol         = "tcp"
-    cidr_blocks      = ["0.0.0.0/0"]
-    ipv6_cidr_blocks = ["::/0"]
-  }
-
-  egress {
-    from_port        = "80"
-    to_port          = "80"
-    protocol         = "tcp"
-    cidr_blocks      = ["0.0.0.0/0"]
-    ipv6_cidr_blocks = ["::/0"]
-  }
-}
-
-# Inbound SSH access on standard port
-resource "aws_security_group" "inbound_ssh" {
-  name        = "inbound_ssh"
-  description = "Allow inbound SSH access"
-
-  vpc_id = module.vpc.vpc_id
-
-  ingress {
-    from_port = "22"
-    to_port   = "22"
-    protocol  = "tcp"
-
-    # Allow SSH in from anywhere
-    # In Production, this would be a REALLY bad idea
-    # But it's good enough for this demonstration
-    cidr_blocks      = ["0.0.0.0/0"]
-    ipv6_cidr_blocks = ["::/0"]
-  }
-}
-
 # Allow inbound HTTP access on standard port
 # In Production, you'd want to configure SSL etc.
 # potentially run behind a load balancer of some kind.
@@ -140,26 +96,12 @@ resource "aws_security_group" "inbound_http" {
   }
 }
 
-
-# Create an SSH key
-resource "tls_private_key" "ssh" {
-  algorithm = "RSA"
-}
-
-# Upload it to AWS
-resource "aws_key_pair" "my-keypair" {
-  key_name_prefix = "strawb-key"
-  public_key      = tls_private_key.ssh.public_key_openssh
-}
-
 # Now create the EC2 instance
 resource "aws_instance" "web" {
   ami           = data.aws_ami.ubuntu.id
   instance_type = "t3.micro"
   vpc_security_group_ids = [
     aws_security_group.ec2_instance_connect.id,
-    aws_security_group.outbound_http.id,
-    aws_security_group.inbound_ssh.id,
     aws_security_group.inbound_http.id,
   ]
 
@@ -167,22 +109,6 @@ resource "aws_instance" "web" {
 
   lifecycle {
     create_before_destroy = true
-  }
-
-  key_name = aws_key_pair.my-keypair.key_name
-
-  provisioner "remote-exec" {
-    inline = [
-      "sudo apt-get -yq update",
-      "sudo apt-get -yq install nginx",
-    ]
-
-    connection {
-      type        = "ssh"
-      user        = "ubuntu"
-      host        = self.public_ip
-      private_key = tls_private_key.ssh.private_key_pem
-    }
   }
 }
 
