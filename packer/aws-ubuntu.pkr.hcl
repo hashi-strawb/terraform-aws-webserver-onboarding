@@ -8,7 +8,7 @@ packer {
 }
 
 source "amazon-ebs" "ubuntu" {
-  ami_name = "strawbtest-se-onboarding-terraform-oss"
+  ami_name = "strawbtest/se-onboarding/webserver/v0.1.0"
 
   instance_type = "t2.micro"
 
@@ -24,18 +24,13 @@ source "amazon-ebs" "ubuntu" {
   tags = {
     Name    = "StrawbTest"
     Owner   = "lucy.davinhart@hashicorp.com"
-    Purpose = "SE Onboarding Week 5 - Terraform OSS"
+    Purpose = "SE Onboarding Week 6 - TFC"
     TTL     = "24h"
-    Packer  = "true"
+    Packer  = true
+
+    # By default, newly uploaded AMIs are not marked as safe for production
+    Production = false
   }
-
-  # Remove old AMI and replace with this one
-  # In Production, you would likely want to keep the old one around in case you
-  # need to roll back.
-  # You would also want some kind of AMI Promotion workflow.
-  force_deregister = true
-
-  force_delete_snapshot = true
 
   source_ami_filter {
     filters = {
