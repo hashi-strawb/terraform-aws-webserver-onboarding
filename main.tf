@@ -37,7 +37,7 @@ data "aws_ami" "ubuntu" {
 
   filter {
     name   = "name"
-    values = ["strawbtest/se-onboarding/webserver/v0.1.0"]
+    values = ["strawbtest/se-onboarding/webserver/v0.2.0"]
   }
 
   filter {

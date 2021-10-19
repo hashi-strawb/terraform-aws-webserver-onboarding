@@ -8,7 +8,7 @@ packer {
 }
 
 source "amazon-ebs" "ubuntu" {
-  ami_name = "strawbtest/se-onboarding/webserver/v0.1.0"
+  ami_name = "strawbtest/se-onboarding/webserver/v0.2.0"
 
   instance_type = "t2.micro"
 
