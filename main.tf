@@ -37,7 +37,7 @@ data "aws_ami" "ubuntu" {
 
   filter {
     name   = "name"
-    values = ["strawbtest/se-onboarding/webserver/v0.2.0"]
+    values = [var.ami_name]
   }
 
   filter {
@@ -110,12 +110,4 @@ resource "aws_instance" "web" {
   lifecycle {
     create_before_destroy = true
   }
-}
-
-output "ec2_connect_url" {
-  value = "https://${data.aws_region.current.name}.console.aws.amazon.com/ec2/v2/connect/ubuntu/${aws_instance.web.id}"
-}
-
-output "web_server_url" {
-  value = "http://${aws_instance.web.public_ip}"
 }
