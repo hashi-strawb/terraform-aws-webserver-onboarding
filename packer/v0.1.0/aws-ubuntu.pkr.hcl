@@ -8,7 +8,7 @@ packer {
 }
 
 source "amazon-ebs" "ubuntu" {
-  ami_name = "strawbtest/se-onboarding/webserver/v0.2.0"
+  ami_name = "strawbtest/se-onboarding/webserver/v0.1.0"
 
   instance_type = "t2.micro"
 
@@ -28,9 +28,18 @@ source "amazon-ebs" "ubuntu" {
     TTL     = "24h"
     Packer  = true
 
-    # By default, newly uploaded AMIs are not marked as safe for production
-    Production = false
+    # In reality, Packer would not be responsible for promoting an AMI for use in Production
+    # But for the sake of this demo, I'll do that here
+    Production = true
   }
+
+  # Remove old AMI and replace with this one
+  # In Production, you would likely want to keep the old one around in case you
+  # need to roll back.
+  # You would also want some kind of AMI Promotion workflow.
+  force_deregister = true
+
+  force_delete_snapshot = true
 
   source_ami_filter {
     filters = {

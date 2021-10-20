@@ -36,7 +36,7 @@ for region in eu-west-1 eu-west-2; do
 	done
 done
 
-if [[ dryrun == "" ]]; then
+if [[ ${dryrun} == "--dry-run" ]]; then
 	echo
 	echo To run for real, run with
 	echo ./cleanup.sh --no-dry-run
