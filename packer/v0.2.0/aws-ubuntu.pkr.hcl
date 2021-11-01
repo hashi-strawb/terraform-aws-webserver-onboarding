@@ -1,7 +1,7 @@
 packer {
   required_plugins {
     amazon = {
-      version = ">= 0.0.2"
+      version = ">= 1.0.4"
       source  = "github.com/hashicorp/amazon"
     }
   }
@@ -55,6 +55,19 @@ source "amazon-ebs" "ubuntu" {
 }
 
 build {
+  hcp_packer_registry {
+    bucket_name = "hashi-strawb-onboarding-webserver"
+
+    description = <<EOT
+Some nice description about the image being published to HCP Packer Registry.
+    EOT
+
+    labels = {
+      "version" = "0.2.0"
+      "flavor"  = "nginx"
+    }
+  }
+
   name = "webserver"
 
   sources = [
