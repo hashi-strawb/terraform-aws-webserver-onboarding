@@ -11,7 +11,7 @@ if [[ "$1" == "--no-dry-run" ]]; then
 	dryrun=""
 fi
 
-image_filter='Name=name,Values=strawbtest/se-onboarding/webserver*'
+image_filter='Name=name,Values=strawbtest/demo/webserver*'
 
 for region in eu-west-1 eu-west-2; do
 	echo "Region: ${region}"
