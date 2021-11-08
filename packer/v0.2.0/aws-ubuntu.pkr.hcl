@@ -8,7 +8,7 @@ packer {
 }
 
 source "amazon-ebs" "ubuntu" {
-  ami_name = "strawbtest/se-onboarding/webserver/v0.2.0"
+  ami_name = "strawbtest/demo/webserver/v0.2.0"
 
   instance_type = "t2.micro"
 
@@ -24,9 +24,10 @@ source "amazon-ebs" "ubuntu" {
   tags = {
     Name    = "StrawbTest"
     Owner   = "lucy.davinhart@hashicorp.com"
-    Purpose = "SE Onboarding Week 6 - TFC"
+    Purpose = "Dummy Webserver for TFC Demo"
     TTL     = "24h"
     Packer  = true
+    Source  = "https://github.com/hashi-strawb/packer-demo-webserver/tree/main/packer/v0.2.0"
 
     # By default, newly uploaded AMIs are not marked as safe for production
     Production = false
@@ -55,19 +56,6 @@ source "amazon-ebs" "ubuntu" {
 }
 
 build {
-  hcp_packer_registry {
-    bucket_name = "hashi-strawb-onboarding-webserver"
-
-    description = <<EOT
-Some nice description about the image being published to HCP Packer Registry.
-    EOT
-
-    labels = {
-      "version" = "0.2.0"
-      "flavor"  = "nginx"
-    }
-  }
-
   name = "webserver"
 
   sources = [
