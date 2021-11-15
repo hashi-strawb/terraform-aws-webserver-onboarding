@@ -28,5 +28,5 @@ locals {
     "niccage" = "https://placecage.com/${var.image_width}/${var.image_height}"
   }
 
-  image_url = urls[var.image_type]
+  image_url = local.urls[var.image_type]
 }
