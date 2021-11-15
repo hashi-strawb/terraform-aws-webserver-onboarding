@@ -113,6 +113,8 @@ resource "aws_instance" "web" {
 
   user_data = <<ENDUSERDATA
 $!/bin/bash
+touch /home/ubuntu/userdata
+
 cat << EOT > /var/www/html/index.html
 <!DOCTYPE html>
 <html>
