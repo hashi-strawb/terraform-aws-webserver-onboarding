@@ -22,7 +22,7 @@ variable "image_height" {
 
 locals {
   urls = {
-    "cat"     = "https://placekiten.com/${var.image_width}/${var.image_height}"
+    "cat"     = "https://placekitten.com/${var.image_width}/${var.image_height}"
     "dog"     = "https://placedog.net/${var.image_width}/${var.image_height}"
     "bear"    = "https://placebear.com/${var.image_width}/${var.image_height}"
     "niccage" = "https://placecage.com/${var.image_width}/${var.image_height}"
