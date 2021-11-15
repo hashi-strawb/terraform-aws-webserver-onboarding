@@ -21,5 +21,12 @@ variable "image_height" {
 }
 
 locals {
-  image_url = "https://placebear.com/560/400"
+  urls = {
+    "cat"     = "https://placekiten.com/${var.image_width}/${var.image_height}"
+    "dog"     = "https://placedog.net/${var.image_width}/${var.image_height}"
+    "bear"    = "https://placebear.com/${var.image_width}/${var.image_height}"
+    "niccage" = "https://placecage.com/${var.image_width}/${var.image_height}"
+  }
+
+  image_url = urls[var.image_type]
 }
