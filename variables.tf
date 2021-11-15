@@ -25,7 +25,7 @@ locals {
     "cat"     = "https://placekitten.com/${var.image_width}/${var.image_height}"
     "dog"     = "https://placedog.net/${var.image_width}/${var.image_height}"
     "bear"    = "https://placebear.com/${var.image_width}/${var.image_height}"
-    "niccage" = "https://placecage.com/${var.image_width}/${var.image_height}"
+    "niccage" = "https://www.placecage.com/${var.image_width}/${var.image_height}"
   }
 
   image_url = local.urls[var.image_type]
