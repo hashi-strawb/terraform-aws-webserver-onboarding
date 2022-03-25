@@ -59,6 +59,24 @@ source "amazon-ebs" "ubuntu" {
 build {
   name = "webserver"
 
+  hcp_packer_registry {
+    bucket_name = "aws-webserver"
+
+    description = <<EOT
+Dummy webserver for demonstration purposes
+    EOT
+
+    bucket_labels = {
+      "owner" = "platform-team"
+    }
+
+    build_labels = {
+      "os"             = "Ubuntu"
+      "ubuntu-version" = "Focal 20.04"
+      "version"        = "v0.1.1"
+    }
+  }
+
   sources = [
     "source.amazon-ebs.ubuntu",
   ]

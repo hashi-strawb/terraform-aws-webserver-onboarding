@@ -8,5 +8,5 @@ https://github.com/hashi-strawb/se-onboarding-terraform-oss/tree/main/terraform/
 To build the AMI we need AWS creds
 
 ```
-doormat --smoke-test || doormat -r && eval $(doormat aws --account se_demos_dev)
+doormat login -v || doormat -r && eval $(doormat aws export --account se_demos_dev)
 ```
