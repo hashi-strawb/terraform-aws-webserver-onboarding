@@ -32,20 +32,16 @@ module "vpc" {
 
 # Find a suitable AMI to use for this purpose
 
-data "aws_ami" "ubuntu" {
-  most_recent = true
+data "hcp_packer_iteration" "webserver" {
+  bucket_name = var.packer_bucket_name
+  channel     = var.packer_channel
+}
 
-  filter {
-    name   = "name"
-    values = [var.ami_name]
-  }
-
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
-
-  owners = ["self"]
+data "hcp_packer_image" "webserver" {
+  bucket_name    = var.packer_bucket_name
+  cloud_provider = "aws"
+  iteration_id   = data.hcp_packer_iteration.webserver.ulid
+  region         = data.aws_region.current.name
 }
 
 # Allow us to easily connect to the EC2 instance with AWS EC2 Connect
@@ -98,7 +94,7 @@ resource "aws_security_group" "inbound_http" {
 
 # Now create the EC2 instance
 resource "aws_instance" "web" {
-  ami           = data.aws_ami.ubuntu.id
+  ami           = data.hcp_packer_image.webserver.cloud_image_id
   instance_type = "t3.micro"
   vpc_security_group_ids = [
     aws_security_group.ec2_instance_connect.id,
@@ -110,41 +106,4 @@ resource "aws_instance" "web" {
   lifecycle {
     create_before_destroy = true
   }
-
-  user_data = <<ENDUSERDATA
-#!/bin/bash
-touch /home/ubuntu/userdata
-
-cat << EOT > /var/www/html/index.html
-<!DOCTYPE html>
-<html>
-<head>
-<title>Welcome to nginx!</title>
-<style>
-    body {
-        width: 35em;
-        margin: 0 auto;
-        font-family: Tahoma, Verdana, Arial, sans-serif;
-    }
-    img {
-        width: 35em;
-    }
-</style>
-</head>
-<body>
-<img src="${local.image_url}" />
-<h1>Welcome to nginx</h1>
-<p>If you see this page, the nginx web server is successfully installed and
-working. Further configuration is required.</p>
-
-<p>For online documentation and support please refer to
-<a href="http://nginx.org/">nginx.org</a>.<br/>
-Commercial support is available at
-<a href="http://nginx.com/">nginx.com</a>.</p>
-
-<p><em>Thank you for using nginx.</em></p>
-</body>
-</html>
-EOT
-ENDUSERDATA
 }
