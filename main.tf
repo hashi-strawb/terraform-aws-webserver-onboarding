@@ -30,20 +30,6 @@ module "vpc" {
   public_subnets = ["10.0.101.0/24", "10.0.102.0/24", "10.0.103.0/24"]
 }
 
-# Find a suitable AMI to use for this purpose
-
-data "hcp_packer_iteration" "webserver" {
-  bucket_name = var.packer_bucket_name
-  channel     = var.packer_channel
-}
-
-data "hcp_packer_image" "webserver" {
-  bucket_name    = var.packer_bucket_name
-  cloud_provider = "aws"
-  iteration_id   = data.hcp_packer_iteration.webserver.ulid
-  region         = data.aws_region.current.name
-}
-
 # Allow us to easily connect to the EC2 instance with AWS EC2 Connect
 
 data "aws_ip_ranges" "ec2_instance_connect" {
@@ -92,6 +78,20 @@ resource "aws_security_group" "inbound_http" {
   }
 }
 
+
+# Find a suitable AMI to use for this purpose
+data "hcp_packer_iteration" "webserver" {
+  bucket_name = var.packer_bucket_name
+  channel     = var.packer_channel
+}
+
+data "hcp_packer_image" "webserver" {
+  bucket_name    = var.packer_bucket_name
+  cloud_provider = "aws"
+  iteration_id   = data.hcp_packer_iteration.webserver.ulid
+  region         = data.aws_region.current.name
+}
+  
 # Now create the EC2 instance
 resource "aws_instance" "web" {
   ami           = data.hcp_packer_image.webserver.cloud_image_id
