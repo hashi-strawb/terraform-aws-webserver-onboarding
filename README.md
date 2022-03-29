@@ -1,9 +1,8 @@
 # Terraform Module for Webserver
 
-Part of the Week 6 SE Onboarding Terraform exercise
+Example Terraform module which provisions an NGINX webserver, running on an EC2 instance, in a new VPC.
 
-This is based on the Webserver module from the Week 5 exercise:
-https://github.com/hashi-strawb/se-onboarding-terraform-oss/tree/main/terraform/04_packer/webserver
+Not particularly useful by itself, but useful for demoing Terraform in general.
 
 To build the AMI we need AWS creds
 
