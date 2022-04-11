@@ -10,3 +10,8 @@ variable "packer_channel" {
   description = "Which HCP Packer channel should we use for our AMI?"
 }
 
+variable "instance_type" {
+  type        = string
+  default     = "t3.micro"
+  description = "How big of an instance should we create?"
+}

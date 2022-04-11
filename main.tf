@@ -91,11 +91,11 @@ data "hcp_packer_image" "webserver" {
   iteration_id   = data.hcp_packer_iteration.webserver.ulid
   region         = data.aws_region.current.name
 }
-  
+
 # Now create the EC2 instance
 resource "aws_instance" "web" {
   ami           = data.hcp_packer_image.webserver.cloud_image_id
-  instance_type = "t3.micro"
+  instance_type = var.instance_type
   vpc_security_group_ids = [
     aws_security_group.ec2_instance_connect.id,
     aws_security_group.inbound_http.id,
