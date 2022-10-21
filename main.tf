@@ -105,5 +105,10 @@ resource "aws_instance" "web" {
 
   lifecycle {
     create_before_destroy = true
+
+    postcondition {
+      condition     = self.ami == data.hcp_packer_image.webserver.cloud_image_id
+      error_message = "Newer AMI available: ${data.hcp_packer_image.webserver.cloud_image_id}"
+    }
   }
 }
