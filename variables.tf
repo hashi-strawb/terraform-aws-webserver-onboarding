@@ -15,3 +15,9 @@ variable "instance_type" {
   default     = "t3.micro"
   description = "How big of an instance should we create?"
 }
+
+variable "vpc_name" {
+  type        = string
+  default     = "strawbtest"
+  description = "A name to identify the VPC"
+}
