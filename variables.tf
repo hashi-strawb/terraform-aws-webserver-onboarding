@@ -1,6 +1,6 @@
 variable "packer_bucket_name" {
   type        = string
-  default     = "aws-webserver"
+  default     = "webserver"
   description = "Which HCP Packer bucket should we pull our AMI from?"
 }
 
