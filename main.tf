@@ -2,7 +2,7 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 3.0"
+      version = "~> 5.2"
     }
   }
 }
@@ -21,7 +21,7 @@ data "aws_region" "current" {}
 module "vpc" {
   # https://registry.terraform.io/modules/terraform-aws-modules/vpc/aws/latest 
   source  = "terraform-aws-modules/vpc/aws"
-  version = "3.7.0"
+  version = "5.0.0"
 
   name = var.vpc_name
   cidr = "10.0.0.0/16"
