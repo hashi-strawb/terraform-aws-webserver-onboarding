@@ -96,8 +96,8 @@ data "hcp_packer_image" "webserver" {
 
   lifecycle {
     postcondition {
-      condition     = timecmp(plantimestamp(), timeadd(self.created_at, "90m")) < 0
-      error_message = "The image referenced in the Packer bucket is more than 90 minutes old."
+      condition     = timecmp(plantimestamp(), timeadd(self.created_at, "40m")) < 0
+      error_message = "The image referenced in the Packer bucket is more than 40 minutes old."
     }
   }
 }
@@ -133,7 +133,7 @@ check "latest_ami" {
 check "ami_age" {
   # Deliberately short TTL, to check if Health Checks pick this up
   assert {
-    condition     = timecmp(plantimestamp(), timeadd(data.hcp_packer_image.webserver.created_at, "90m")) < 0
-    error_message = "The image referenced in the Packer bucket is more than 90 minutes old."
+    condition     = timecmp(plantimestamp(), timeadd(data.hcp_packer_image.webserver.created_at, "40m")) < 0
+    error_message = "The image referenced in the Packer bucket is more than 40 minutes old."
   }
 }
