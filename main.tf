@@ -117,3 +117,11 @@ check "latest_ami" {
     error_message = "Newer AMI available: ${data.hcp_packer_image.webserver.cloud_image_id}"
   }
 }
+
+check "ami_age" {
+  # Deliberately short TTL, to check if Health Checks pick this up
+  assert {
+    condition     = timecmp(plantimestamp(), timeadd(data.hcp_packer_image.webserver.created_at, "5m")) < 0
+    error_message = "The image referenced in the Packer bucket is more than 5 minutes old."
+  }
+}
