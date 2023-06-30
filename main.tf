@@ -93,6 +93,13 @@ data "hcp_packer_image" "webserver" {
   cloud_provider = "aws"
   iteration_id   = data.hcp_packer_iteration.webserver.ulid
   region         = data.aws_region.current.name
+
+  lifecycle {
+    postcondition {
+      condition     = timecmp(plantimestamp(), timeadd(self.created_at, "90m")) < 0
+      error_message = "The image referenced in the Packer bucket is more than 90 minutes old."
+    }
+  }
 }
 
 # Now create the EC2 instance
@@ -108,6 +115,11 @@ resource "aws_instance" "web" {
 
   lifecycle {
     create_before_destroy = true
+
+    postcondition {
+      condition     = self.ami == data.hcp_packer_image.webserver.cloud_image_id
+      error_message = "Newer AMI available: ${data.hcp_packer_image.webserver.cloud_image_id}"
+    }
   }
 }
 
@@ -121,7 +133,7 @@ check "latest_ami" {
 check "ami_age" {
   # Deliberately short TTL, to check if Health Checks pick this up
   assert {
-    condition     = timecmp(plantimestamp(), timeadd(data.hcp_packer_image.webserver.created_at, "5m")) < 0
-    error_message = "The image referenced in the Packer bucket is more than 5 minutes old."
+    condition     = timecmp(plantimestamp(), timeadd(data.hcp_packer_image.webserver.created_at, "90m")) < 0
+    error_message = "The image referenced in the Packer bucket is more than 90 minutes old."
   }
 }
