@@ -131,7 +131,15 @@ check "latest_ami" {
   # Workaround for check{} blocks currently evaluating against the future
   # state of the resource: use current state instead, from a data source
   data "aws_instance" "web" {
-    instance_id = aws_instance.web.id
+    # Can't use instance_id either, because in the case of a newer AMI, that ID is going to change too
+    # instance_id = aws_instance.web.id
+
+    # So instead... just give me all the EC2 instances in this VPC
+    # That's okay for this use-case, but not generalisable
+    filter {
+      name   = "vpc-id"
+      values = [module.vpc.vpc_id]
+    }
   }
 
   assert {
