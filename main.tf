@@ -1,4 +1,7 @@
 terraform {
+  # We're using Terraform Checks
+  required_version = ">= 1.5"
+
   required_providers {
     aws = {
       source  = "hashicorp/aws"
@@ -105,10 +108,12 @@ resource "aws_instance" "web" {
 
   lifecycle {
     create_before_destroy = true
+  }
+}
 
-    postcondition {
-      condition     = self.ami == data.hcp_packer_image.webserver.cloud_image_id
-      error_message = "Newer AMI available: ${data.hcp_packer_image.webserver.cloud_image_id}"
-    }
+check "latest_ami" {
+  assert {
+    condition     = aws_instance.web.ami == data.hcp_packer_image.webserver.cloud_image_id
+    error_message = "Newer AMI available: ${data.hcp_packer_image.webserver.cloud_image_id}"
   }
 }
