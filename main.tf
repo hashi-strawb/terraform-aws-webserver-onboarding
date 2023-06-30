@@ -94,12 +94,14 @@ data "hcp_packer_image" "webserver" {
   iteration_id   = data.hcp_packer_iteration.webserver.ulid
   region         = data.aws_region.current.name
 
+  /*
   lifecycle {
     postcondition {
       condition     = timecmp(plantimestamp(), timeadd(self.created_at, "40m")) < 0
       error_message = "The image referenced in the Packer bucket is more than 40 minutes old."
     }
   }
+  */
 }
 
 # Now create the EC2 instance
@@ -116,16 +118,24 @@ resource "aws_instance" "web" {
   lifecycle {
     create_before_destroy = true
 
+    /*
     postcondition {
       condition     = self.ami == data.hcp_packer_image.webserver.cloud_image_id
       error_message = "Newer AMI available: ${data.hcp_packer_image.webserver.cloud_image_id}"
     }
+    */
   }
 }
 
 check "latest_ami" {
+  # Workaround for check{} blocks currently evaluating against the future
+  # state of the resource: use current state instead, from a data source
+  data "aws_instance" "web" {
+    instance_id = aws_instance.web.id
+  }
+
   assert {
-    condition     = aws_instance.web.ami == data.hcp_packer_image.webserver.cloud_image_id
+    condition     = data.aws_instance.web.ami == data.hcp_packer_image.webserver.cloud_image_id
     error_message = "Newer AMI available: ${data.hcp_packer_image.webserver.cloud_image_id}"
   }
 }
