@@ -4,7 +4,7 @@ terraform {
     organization = "fancycorp"
 
     workspaces {
-      tags = ["webserver", "platform:aws"]
+      tags = ["canary:module:terraform-aws-webserver"]
     }
   }
 
