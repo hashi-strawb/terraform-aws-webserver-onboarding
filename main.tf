@@ -151,7 +151,7 @@ check "latest_ami" {
 check "ami_age" {
   # Deliberately short TTL, to check if Health Checks pick this up
   assert {
-    condition     = timecmp(plantimestamp(), timeadd(data.hcp_packer_image.webserver.created_at, "40m")) < 0
-    error_message = "The image referenced in the Packer bucket is more than 40 minutes old."
+    condition     = timecmp(plantimestamp(), timeadd(data.hcp_packer_image.webserver.created_at, "720h")) < 0
+    error_message = "The image referenced in the Packer bucket is more than 30 days old."
   }
 }
