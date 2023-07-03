@@ -106,7 +106,7 @@ data "hcp_packer_image" "webserver" {
 
 # Now create the EC2 instance
 resource "aws_instance" "web" {
-  ami           = data.hcp_packer_image.webserver.cloud_image_id
+  ami           = "ami-0fc360dde2ba49a9a" # a revoked AMI
   instance_type = var.instance_type
   vpc_security_group_ids = [
     aws_security_group.ec2_instance_connect.id,
