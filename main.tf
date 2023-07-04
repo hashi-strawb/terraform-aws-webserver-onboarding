@@ -144,7 +144,11 @@ check "latest_ami" {
 
   assert {
     condition     = data.aws_instance.web.ami == data.hcp_packer_image.webserver.cloud_image_id
-    error_message = "Newer AMI available: ${data.hcp_packer_image.webserver.cloud_image_id}"
+    error_message = <<-EOF
+    Newer AMI available: ${data.hcp_packer_iteration.webserver.bucket_name}:${data.hcp_packer_iteration.webserver.channel} v${data.hcp_packer_iteration.webserver.incremental_version} = ${data.hcp_packer_image.webserver.cloud_image_id}
+
+    https://portal.cloud.hashicorp.com/services/packer/webserver/iterations/${data.hcp_packer_iteration.webserver.ulid}?project_id=${data.hcp_packer_iteration.webserver.project_id}
+    EOF
   }
 }
 
