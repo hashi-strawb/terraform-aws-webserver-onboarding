@@ -107,6 +107,12 @@ data "hcp_packer_image" "webserver" {
 # Now create the EC2 instance
 resource "aws_instance" "web" {
   ami           = data.hcp_packer_image.webserver.cloud_image_id
+  tags = {
+    "packer_bucket_name" = var.packer_bucket_name
+    "packer_channel"  = var.packer_channel
+  }
+
+
   instance_type = var.instance_type
   vpc_security_group_ids = [
     aws_security_group.ec2_instance_connect.id,
@@ -134,11 +140,9 @@ check "latest_ami" {
     # Can't use instance_id either, because in the case of a newer AMI, that ID is going to change too
     # instance_id = aws_instance.web.id
 
-    # So instead... just give me all the EC2 instances in this VPC
-    # That's okay for this use-case, but not generalisable
-    filter {
-      name   = "vpc-id"
-      values = [module.vpc.vpc_id]
+    instance_tags = {
+      "packer_bucket_name" = var.packer_bucket_name
+      "packer_channel"  = var.packer_channel
     }
   }
 
