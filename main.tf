@@ -1,4 +1,7 @@
 terraform {
+  # We're using Terraform Checks
+  required_version = ">= 1.5"
+
   required_providers {
     aws = {
       source  = "hashicorp/aws"
@@ -21,7 +24,7 @@ data "aws_region" "current" {}
 module "vpc" {
   # https://registry.terraform.io/modules/terraform-aws-modules/vpc/aws/latest 
   source  = "terraform-aws-modules/vpc/aws"
-  version = "5.0.0"
+  version = "5.1.0"
 
   name = var.vpc_name
   cidr = "10.0.0.0/16"
@@ -90,11 +93,28 @@ data "hcp_packer_image" "webserver" {
   cloud_provider = "aws"
   iteration_id   = data.hcp_packer_iteration.webserver.ulid
   region         = data.aws_region.current.name
+
+  /*
+  lifecycle {
+    postcondition {
+      condition     = timecmp(plantimestamp(), timeadd(self.created_at, "40m")) < 0
+      error_message = "The image referenced in the Packer bucket is more than 40 minutes old."
+    }
+  }
+  */
 }
 
 # Now create the EC2 instance
 resource "aws_instance" "web" {
-  ami           = data.hcp_packer_image.webserver.cloud_image_id
+  ami = data.hcp_packer_image.webserver.cloud_image_id
+  tags = {
+    "packer_bucket_name" = var.packer_bucket_name
+    "packer_channel"     = var.packer_channel
+  }
+
+  associate_public_ip_address = true
+
+
   instance_type = var.instance_type
   vpc_security_group_ids = [
     aws_security_group.ec2_instance_connect.id,
@@ -106,9 +126,42 @@ resource "aws_instance" "web" {
   lifecycle {
     create_before_destroy = true
 
+    /*
     postcondition {
       condition     = self.ami == data.hcp_packer_image.webserver.cloud_image_id
       error_message = "Newer AMI available: ${data.hcp_packer_image.webserver.cloud_image_id}"
     }
+    */
+  }
+}
+
+check "latest_ami" {
+  # Workaround for check{} blocks currently evaluating against the future
+  # state of the resource: use current state instead, from a data source
+  data "aws_instance" "web" {
+    # Can't use instance_id either, because in the case of a newer AMI, that ID is going to change too
+    # instance_id = aws_instance.web.id
+
+    instance_tags = {
+      "packer_bucket_name" = var.packer_bucket_name
+      "packer_channel"     = var.packer_channel
+    }
+  }
+
+  assert {
+    condition     = data.aws_instance.web.ami == data.hcp_packer_image.webserver.cloud_image_id
+    error_message = <<-EOF
+    Newer AMI available: ${data.hcp_packer_iteration.webserver.bucket_name}:${data.hcp_packer_iteration.webserver.channel} v${data.hcp_packer_iteration.webserver.incremental_version} = ${data.hcp_packer_image.webserver.cloud_image_id}
+
+    https://portal.cloud.hashicorp.com/services/packer/webserver/iterations/${data.hcp_packer_iteration.webserver.ulid}?project_id=${data.hcp_packer_iteration.webserver.project_id}
+    EOF
+  }
+}
+
+check "ami_age" {
+  # Deliberately short TTL, to check if Health Checks pick this up
+  assert {
+    condition     = timecmp(plantimestamp(), timeadd(data.hcp_packer_image.webserver.created_at, "720h")) < 0
+    error_message = "The image referenced in the Packer bucket is more than 30 days old."
   }
 }
