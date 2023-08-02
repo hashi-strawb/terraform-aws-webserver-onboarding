@@ -106,11 +106,13 @@ data "hcp_packer_image" "webserver" {
 
 # Now create the EC2 instance
 resource "aws_instance" "web" {
-  ami           = data.hcp_packer_image.webserver.cloud_image_id
+  ami = data.hcp_packer_image.webserver.cloud_image_id
   tags = {
     "packer_bucket_name" = var.packer_bucket_name
-    "packer_channel"  = var.packer_channel
+    "packer_channel"     = var.packer_channel
   }
+
+  associate_public_ip_address = true
 
 
   instance_type = var.instance_type
@@ -142,7 +144,7 @@ check "latest_ami" {
 
     instance_tags = {
       "packer_bucket_name" = var.packer_bucket_name
-      "packer_channel"  = var.packer_channel
+      "packer_channel"     = var.packer_channel
     }
   }
 
