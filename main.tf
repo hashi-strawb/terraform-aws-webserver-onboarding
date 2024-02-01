@@ -154,7 +154,7 @@ check "latest_ami" {
     error_message = <<-EOF
     Newer AMI available: ${data.hcp_packer_artifact.webserver.bucket_name}:${data.hcp_packer_artifact.webserver.channel_name} v${data.hcp_packer_artifact.webserver.version_fingerprint} = ${data.hcp_packer_artifact.webserver.external_identifier}
 
-    https://portal.cloud.hashicorp.com/services/packer/buckets/${var.packer_bucket_name}/versions/${data.hcp_packer_artifact.webserver.id}?project_id=${data.hcp_packer_artifact.webserver.project_id}
+    https://portal.cloud.hashicorp.com/services/packer/buckets/${var.packer_bucket_name}/versions/?project_id=${data.hcp_packer_artifact.webserver.project_id}
     EOF
   }
 }
