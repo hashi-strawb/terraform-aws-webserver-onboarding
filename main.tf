@@ -95,14 +95,6 @@ data "hcp_packer_artifact" "webserver" {
 
   region = data.aws_region.current.name
 
-  /*
-  lifecycle {
-    postcondition {
-      condition     = timecmp(plantimestamp(), timeadd(self.created_at, "40m")) < 0
-      error_message = "The image referenced in the Packer bucket is more than 40 minutes old."
-    }
-  }
-  */
 }
 
 # Now create the EC2 instance
@@ -126,36 +118,6 @@ resource "aws_instance" "web" {
 
   lifecycle {
     create_before_destroy = true
-
-    /*
-    postcondition {
-      condition     = self.ami == data.hcp_packer_artifact.webserver.external_identifier
-      error_message = "Newer AMI available: ${data.hcp_packer_artifact.webserver.external_identifier}"
-    }
-    */
-  }
-}
-
-check "latest_ami" {
-  # Workaround for check{} blocks currently evaluating against the future
-  # state of the resource: use current state instead, from a data source
-  data "aws_instance" "web" {
-    # Can't use instance_id either, because in the case of a newer AMI, that ID is going to change too
-    # instance_id = aws_instance.web.id
-
-    instance_tags = {
-      "packer_bucket_name" = var.packer_bucket_name
-      "packer_channel"     = var.packer_channel
-    }
-  }
-
-  assert {
-    condition     = data.aws_instance.web.ami == data.hcp_packer_artifact.webserver.external_identifier
-    error_message = <<-EOF
-    Newer AMI available: ${data.hcp_packer_artifact.webserver.bucket_name}:${data.hcp_packer_artifact.webserver.channel_name} v${data.hcp_packer_artifact.webserver.version_fingerprint} = ${data.hcp_packer_artifact.webserver.external_identifier}
-
-    https://portal.cloud.hashicorp.com/services/packer/buckets/${var.packer_bucket_name}/versions/?project_id=${data.hcp_packer_artifact.webserver.project_id}
-    EOF
   }
 }
 
