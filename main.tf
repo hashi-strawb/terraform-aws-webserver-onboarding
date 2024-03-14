@@ -94,7 +94,13 @@ data "hcp_packer_artifact" "webserver" {
   platform     = "aws"
 
   region = data.aws_region.current.name
-
+}
+check "ami_age" {
+  # Deliberately short TTL, to check if Health Checks pick this up
+  assert {
+    condition     = timecmp(plantimestamp(), timeadd(data.hcp_packer_artifact.webserver.created_at, "720h")) < 0
+    error_message = "The image referenced in the Packer bucket is more than 30 days old."
+  }
 }
 
 # Now create the EC2 instance
@@ -121,10 +127,16 @@ resource "aws_instance" "web" {
   }
 }
 
-check "ami_age" {
-  # Deliberately short TTL, to check if Health Checks pick this up
-  assert {
-    condition     = timecmp(plantimestamp(), timeadd(data.hcp_packer_artifact.webserver.created_at, "720h")) < 0
-    error_message = "The image referenced in the Packer bucket is more than 30 days old."
-  }
+
+
+# And a Route53 Record
+data "aws_route53_zone" "zone" {
+  name = var.route53_zone
+}
+resource "aws_route53_record" "webserver" {
+  zone_id = data.aws_route53_zone.zone.zone_id
+  name    = "${aws_instance.web.id}.${var.vpc_name}"
+  type    = "A"
+  ttl     = 300
+  records = [aws_instance.web.public_ip]
 }
