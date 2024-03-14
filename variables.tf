@@ -21,3 +21,8 @@ variable "vpc_name" {
   default     = "strawbtest"
   description = "A name to identify the VPC"
 }
+
+variable "route53_zone" {
+  type    = string
+  default = "lucy-davinhart.sbx.hashidemos.io"
+}
