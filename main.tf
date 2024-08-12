@@ -127,6 +127,14 @@ resource "aws_instance" "web" {
 
   subnet_id = module.vpc.public_subnets[0]
 
+
+  metadata_options {
+    // do not force IMDSv2, mainly because I'm lazy and the /identity endpoint currently relies on v1
+    http_tokens = "optional"
+  }
+
+
+
   lifecycle {
     create_before_destroy = true
   }
