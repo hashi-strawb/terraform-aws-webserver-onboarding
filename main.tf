@@ -154,7 +154,7 @@ locals {
   webserver_url = "http://${aws_route53_record.webserver.fqdn}"
 }
 
-resource "terracurl_request" "test" {
+data "terracurl_request" "test" {
   name   = "smoke test webserver"
   url    = local.webserver_url
   method = "GET"
@@ -166,26 +166,32 @@ resource "terracurl_request" "test" {
   // Retry for up to 60s
   max_retry      = 4
   retry_interval = 15
-
-  lifecycle {
-    // Any change to the EC2 instance, do another TerraCurl check
-    replace_triggered_by = [
-      aws_instance.web
-    ]
-  }
-
-  /*
-    If this resource is created successfully, we get something like this in the Apply output:
-  
-    module.webserver.terracurl_request.test: Creating...
-    module.webserver.terracurl_request.test: Still creating... [10s elapsed]
-    module.webserver.terracurl_request.test: Creation complete after 16s [id=smoke test 
-    webserver]
-
-    If not...
-    Error: unable to make request: request failed, retries exceeded: Get "http://35.179.168.96": context deadline exceeded
-
-  */
 }
+
+
+data "terracurl_request" "test_identity" {
+  name   = "smoke test webserver identity"
+  url    = "${local.webserver_url}/identity"
+  method = "GET"
+
+  response_codes = [
+    200
+  ]
+
+  // Retry for up to 60s
+  max_retry      = 4
+  retry_interval = 15
+}
+
+/*
+check "ami_age" {
+  # Deliberately short TTL, to check if Health Checks pick this up
+  assert {
+    condition     = timecmp(plantimestamp(), timeadd(data.hcp_packer_artifact.webserver.created_at, "720h")) < 0
+    error_message = "The image referenced in the Packer bucket is more than 30 days old."
+  }
+}
+*/
+
 
 // TODO: can we do this as a check{} block instead?
