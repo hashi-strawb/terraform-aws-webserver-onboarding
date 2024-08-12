@@ -1,8 +1,16 @@
 terraform {
+  # We're using Terraform Checks
+  required_version = ">= 1.5"
+
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 3.0"
+      version = "~> 5.2"
+    }
+
+    hcp = {
+      source  = "hashicorp/hcp"
+      version = "~> 0.82"
     }
 
     terracurl = {
@@ -26,7 +34,7 @@ data "aws_region" "current" {}
 module "vpc" {
   # https://registry.terraform.io/modules/terraform-aws-modules/vpc/aws/latest 
   source  = "terraform-aws-modules/vpc/aws"
-  version = "3.7.0"
+  version = "5.12.1"
 
   name = var.vpc_name
   cidr = "10.0.0.0/16"
@@ -85,21 +93,32 @@ resource "aws_security_group" "inbound_http" {
 
 
 # Find a suitable AMI to use for this purpose
-data "hcp_packer_iteration" "webserver" {
-  bucket_name = var.packer_bucket_name
-  channel     = var.packer_channel
-}
+data "hcp_packer_artifact" "webserver" {
+  bucket_name  = var.packer_bucket_name
+  channel_name = var.packer_channel
+  platform     = "aws"
 
-data "hcp_packer_image" "webserver" {
-  bucket_name    = var.packer_bucket_name
-  cloud_provider = "aws"
-  iteration_id   = data.hcp_packer_iteration.webserver.ulid
-  region         = data.aws_region.current.name
+  region = data.aws_region.current.name
+}
+check "ami_age" {
+  # Deliberately short TTL, to check if Health Checks pick this up
+  assert {
+    condition     = timecmp(plantimestamp(), timeadd(data.hcp_packer_artifact.webserver.created_at, "720h")) < 0
+    error_message = "The image referenced in the Packer bucket is more than 30 days old."
+  }
 }
 
 # Now create the EC2 instance
 resource "aws_instance" "web" {
-  ami           = data.hcp_packer_image.webserver.cloud_image_id
+  ami = data.hcp_packer_artifact.webserver.external_identifier
+  tags = {
+    "packer_bucket_name" = var.packer_bucket_name
+    "packer_channel"     = var.packer_channel
+  }
+
+  associate_public_ip_address = true
+
+
   instance_type = var.instance_type
   vpc_security_group_ids = [
     aws_security_group.ec2_instance_connect.id,
@@ -110,13 +129,10 @@ resource "aws_instance" "web" {
 
   lifecycle {
     create_before_destroy = true
-
-    postcondition {
-      condition     = self.ami == data.hcp_packer_image.webserver.cloud_image_id
-      error_message = "Newer AMI available: ${data.hcp_packer_image.webserver.cloud_image_id}"
-    }
   }
 }
+
+
 
 locals {
   webserver_url = "http://${aws_instance.web.public_ip}"
@@ -159,3 +175,17 @@ resource "terracurl_request" "test" {
   */
 }
 
+
+
+
+# And a Route53 Record
+data "aws_route53_zone" "zone" {
+  name = var.route53_zone
+}
+resource "aws_route53_record" "webserver" {
+  zone_id = data.aws_route53_zone.zone.zone_id
+  name    = "${aws_instance.web.id}.${var.vpc_name}"
+  type    = "A"
+  ttl     = 300
+  records = [aws_instance.web.public_ip]
+}

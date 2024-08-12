@@ -1,6 +1,6 @@
 variable "packer_bucket_name" {
   type        = string
-  default     = "aws-webserver"
+  default     = "webserver"
   description = "Which HCP Packer bucket should we pull our AMI from?"
 }
 
@@ -20,4 +20,9 @@ variable "vpc_name" {
   type        = string
   default     = "strawbtest"
   description = "A name to identify the VPC"
+}
+
+variable "route53_zone" {
+  type    = string
+  default = "lucy-davinhart.sbx.hashidemos.io"
 }
