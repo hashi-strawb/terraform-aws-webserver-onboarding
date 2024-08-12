@@ -122,7 +122,9 @@ resource "aws_instance" "web" {
   instance_type = var.instance_type
   vpc_security_group_ids = [
     aws_security_group.ec2_instance_connect.id,
-    aws_security_group.inbound_http.id,
+
+    // TODO: for testing, we've removed HTTP inbound
+    //aws_security_group.inbound_http.id,
   ]
 
   subnet_id = module.vpc.public_subnets[0]
@@ -166,14 +168,11 @@ resource "terracurl_request" "test" {
     module.webserver.terracurl_request.test: Creation complete after 16s [id=smoke test 
     webserver]
 
-    If not...
-    Currently it hangs forever, if I remove access by (e.g.) removing the port 80 SG
-    Blocked by https://github.com/devops-rob/terraform-provider-terracurl/issues/45
-
-    But with a fake URL instead, it gets:
-    │ Error: unable to make request: request failed, retries exceeded: 404 response received:
+    If not...  TESTING
   */
 }
+
+// TODO: can we do this as a check{} block instead?
 
 
 
