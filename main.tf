@@ -171,7 +171,7 @@ data "terracurl_request" "test" {
 check "smoke_test" {
   assert {
     condition     = data.terracurl_request.test.status_code == "200"
-    error_message = "Webserver / responded with ${data.terracurl_request.test.status_code}; expected 200"
+    error_message = "${data.terracurl_request.test.url} responded with ${data.terracurl_request.test.status_code}; expected 200"
   }
 }
 
@@ -198,10 +198,7 @@ data "terracurl_request" "test_identity" {
 
 check "identity_test" {
   assert {
-    condition     = data.terracurl_request.test.status_code == "200"
-    error_message = "Webserver / responded with ${data.terracurl_request.test.status_code}; expected 200"
+    condition     = data.terracurl_request.test_identity.status_code == "200"
+    error_message = "${data.terracurl_request.test_identity.url} responded with ${data.terracurl_request.test_identity.status_code}; expected 200"
   }
 }
-
-
-// TODO: can we do this as a check{} block instead?
