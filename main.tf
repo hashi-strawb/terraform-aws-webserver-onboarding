@@ -154,21 +154,21 @@ locals {
   webserver_url = "http://${aws_route53_record.webserver.fqdn}"
 }
 
-data "terracurl_request" "test" {
-  name   = "smoke test webserver"
-  url    = local.webserver_url
-  method = "GET"
-
-  response_codes = [
-    200
-  ]
-
-  // Retry for up to 60s
-  max_retry      = 4
-  retry_interval = 15
-}
-
 check "smoke_test" {
+  data "terracurl_request" "test" {
+    name   = "smoke test webserver"
+    url    = local.webserver_url
+    method = "GET"
+
+    response_codes = [
+      200
+    ]
+
+    // Retry for up to 60s
+    max_retry      = 4
+    retry_interval = 15
+  }
+
   assert {
     condition     = data.terracurl_request.test.status_code == "200"
     error_message = "${data.terracurl_request.test.url} responded with ${data.terracurl_request.test.status_code}; expected 200"
@@ -182,21 +182,21 @@ check "smoke_test" {
 //
 // I may also want to add a /health or /status endpoint to check against
 
-data "terracurl_request" "test_identity" {
-  name   = "smoke test webserver identity"
-  url    = "${local.webserver_url}/identity"
-  method = "GET"
-
-  response_codes = [
-    200
-  ]
-
-  // Retry for up to 60s
-  max_retry      = 4
-  retry_interval = 15
-}
-
 check "identity_test" {
+  data "terracurl_request" "test_identity" {
+    name   = "smoke test webserver identity"
+    url    = "${local.webserver_url}/identity"
+    method = "GET"
+
+    response_codes = [
+      200
+    ]
+
+    // Retry for up to 60s
+    max_retry      = 4
+    retry_interval = 15
+  }
+
   assert {
     condition     = data.terracurl_request.test_identity.status_code == "200"
     error_message = "${data.terracurl_request.test_identity.url} responded with ${data.terracurl_request.test_identity.status_code}; expected 200"

@@ -10,7 +10,3 @@ output "web_server_ip" {
 output "web_server_url" {
   value = local.webserver_url
 }
-
-output "terracurl_identity_response" {
-  value = data.terracurl_request.test_identity.response
-}
