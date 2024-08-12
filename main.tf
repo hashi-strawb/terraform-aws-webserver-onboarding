@@ -168,6 +168,19 @@ data "terracurl_request" "test" {
   retry_interval = 15
 }
 
+check "smoke_test" {
+  assert {
+    condition     = data.terracurl_request.test.status_code == "200"
+    error_message = "Webserver / responded with ${data.terracurl_request.test.status_code}; expected 200"
+  }
+}
+
+
+// This part is very specific to my webserver AMI, with its /identity URL
+// I'm fine with that for now... but at some point I may want to make this configurable
+// e.g. if I add different types of AMIs.
+//
+// I may also want to add a /health or /status endpoint to check against
 
 data "terracurl_request" "test_identity" {
   name   = "smoke test webserver identity"
@@ -183,15 +196,12 @@ data "terracurl_request" "test_identity" {
   retry_interval = 15
 }
 
-/*
-check "ami_age" {
-  # Deliberately short TTL, to check if Health Checks pick this up
+check "identity_test" {
   assert {
-    condition     = timecmp(plantimestamp(), timeadd(data.hcp_packer_artifact.webserver.created_at, "720h")) < 0
-    error_message = "The image referenced in the Packer bucket is more than 30 days old."
+    condition     = data.terracurl_request.test.status_code == "200"
+    error_message = "Webserver / responded with ${data.terracurl_request.test.status_code}; expected 200"
   }
 }
-*/
 
 
 // TODO: can we do this as a check{} block instead?
