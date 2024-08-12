@@ -8,7 +8,7 @@ output "web_server_ip" {
 }
 
 output "web_server_url" {
-  value = "http://${aws_route53_record.webserver.fqdn}"
+  value = local.webserver_url
 }
 
 output "terracurl_response" {

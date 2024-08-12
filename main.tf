@@ -136,8 +136,24 @@ resource "aws_instance" "web" {
 
 
 
+
+# And a Route53 Record
+data "aws_route53_zone" "zone" {
+  name = var.route53_zone
+}
+resource "aws_route53_record" "webserver" {
+  zone_id = data.aws_route53_zone.zone.zone_id
+  name    = "${aws_instance.web.id}.${var.vpc_name}"
+  type    = "A"
+  ttl     = 300
+  records = [aws_instance.web.public_ip]
+}
+
+
+
+
 locals {
-  webserver_url = "http://${aws_instance.web.public_ip}"
+  webserver_url = "http://${aws_route53_record.webserver.fqdn}"
 }
 
 resource "terracurl_request" "test" {
@@ -168,23 +184,10 @@ resource "terracurl_request" "test" {
     module.webserver.terracurl_request.test: Creation complete after 16s [id=smoke test 
     webserver]
 
-    If not...  TESTING
+    If not...
+    Error: unable to make request: request failed, retries exceeded: Get "http://35.179.168.96": context deadline exceeded
+
   */
 }
 
 // TODO: can we do this as a check{} block instead?
-
-
-
-
-# And a Route53 Record
-data "aws_route53_zone" "zone" {
-  name = var.route53_zone
-}
-resource "aws_route53_record" "webserver" {
-  zone_id = data.aws_route53_zone.zone.zone_id
-  name    = "${aws_instance.web.id}.${var.vpc_name}"
-  type    = "A"
-  ttl     = 300
-  records = [aws_instance.web.public_ip]
-}
