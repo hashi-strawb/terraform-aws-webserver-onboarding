@@ -10,3 +10,7 @@ output "web_server_ip" {
 output "web_server_url" {
   value = "http://${aws_route53_record.webserver.fqdn}"
 }
+
+output "terracurl_response" {
+  value = terracurl_request.test.response
+}
