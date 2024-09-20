@@ -89,6 +89,33 @@ resource "aws_security_group" "inbound_http" {
     cidr_blocks      = ["0.0.0.0/0"]
     ipv6_cidr_blocks = ["::/0"]
   }
+
+  ingress {
+    from_port        = "443"
+    to_port          = "443"
+    protocol         = "tcp"
+    cidr_blocks      = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
+  }
+}
+
+
+
+data "tfe_ip_ranges" "addresses" {}
+
+resource "aws_security_group" "outbound_http_tfc" {
+  name        = "outbound_http_tfc"
+  description = "Allow outbound HTTP access to TFC APIs"
+
+  vpc_id = module.vpc.vpc_id
+
+  egress {
+    from_port        = "443"
+    to_port          = "443"
+    protocol         = "tcp"
+    cidr_blocks      = data.tfe_ip_ranges.addresses.api
+    ipv6_cidr_blocks = ["::/0"]
+  }
 }
 
 
