@@ -150,6 +150,7 @@ resource "aws_instance" "web" {
   vpc_security_group_ids = [
     aws_security_group.ec2_instance_connect.id,
     aws_security_group.inbound_http.id,
+    aws_security_group.outbound_http_tfc.id,
   ]
 
   subnet_id = module.vpc.public_subnets[0]
